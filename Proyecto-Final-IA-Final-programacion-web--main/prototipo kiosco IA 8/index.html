@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kiosco INCADÉ · Prototipo con IA</title>
+  <style>
+  :root {
+    --bg: #0b1020;
+    --card: #121830;
+    --muted: #8aa0ff;
+    --pri: #6ee7ff;
+    --pri-2: #72f1b8;
+    --txt: #e6ebff;
+    --danger: #ff6b6b;
+    --ok: #6bff95;
+    --shadow: 0 10px 30px rgba(0,0,0,.35);
+    --radius: 18px;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background: radial-gradient(1200px 800px at 10% -10%, #16213e22 0, #0000 60%),
+                radial-gradient(800px 600px at 110% 10%, #1b2a6b22 0, #0000 60%),
+                var(--bg);
+    color: var(--txt);
+    font-family: 'Inter', system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: linear-gradient(180deg, #0b1020ee, #0b1020aa, #0b102000);
+    backdrop-filter: blur(6px);
+    padding: 0.5rem 0;
+  }
+
+  .wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+
+  .bar {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .brand {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .logo {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: conic-gradient(from 130deg, var(--pri), var(--pri-2));
+    box-shadow: var(--shadow);
+    font-weight: 800;
+    color: #0b1020;
+  }
+
+  h1 {
+    font-size: 1.15rem;
+    margin: 0;
+  }
+
+  .pill {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #2a335a;
+    border-radius: 999px;
+    background: #0e1430;
+    font-size: 0.85rem;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 1.5rem;
+    margin: 1.5rem auto;
+  }
+
+  @media (max-width: 980px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .card {
+    background: linear-gradient(180deg, #121830, #0f1530);
+    border: 1px solid #27305a;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.125rem;
+    border-bottom: 1px solid #222b55;
+  }
+
+  .card-body {
+    padding: 1rem 1.125rem;
+  }
+
+  .controls {
+    display: flex;
+    gap: 0.625rem;
+    flex-wrap: wrap;
+  }
+
+  input, select, button {
+    font: inherit;
+    color: var(--txt);
+  }
+
+  input[type="text"], input[type="number"], input[type="password"], select {
+    background: #0c1230;
+    border: 1px solid #2a335a;
+    border-radius: 12px;
+    padding: 0.625rem 0.75rem;
+    outline: none;
+  }
+
+  input:focus, select:focus {
+    border-color: var(--pri);
+  }
+
+  .btn {
+    background: linear-gradient(180deg, var(--pri), #59d1ff);
+    border: 0;
+    border-radius: 12px;
+    padding: 0.625rem 0.875rem;
+    font-weight: 700;
+    color: #041423;
+    cursor: pointer;
+    box-shadow: 0 8px 20px #58d0ff42;
+    transition: all 0.2s ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px #58d0ff66;
+  }
+
+  .btn.secondary {
+    background: linear-gradient(180deg, #7bf3c8, #57daa9);
+  }
+
+  .btn.ghost {
+    background: #0c1230;
+    border: 1px solid #2a335a;
+    color: var(--txt);
+  }
+
+  .btn.danger {
+    background: linear-gradient(180deg, #ff8d8d, #ff6b6b);
+  }
+
+  .products {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.875rem;
+  }
+
+  .prod {
+    background: linear-gradient(180deg, #141b3a, #121832);
+    border: 1px solid #2a335a;
+    border-radius: 16px;
+    padding: 0.75rem;
+    display: flex;
+    gap: 0.625rem;
+    flex-direction: column;
+    transition: transform 0.2s ease;
+    position: relative;
+  }
+
+  .prod:hover {
+    transform: translateY(-5px);
+    border-color: var(--muted);
+  }
+
+  .thumb {
+    height: 110px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    font-size: 40px;
+    background: radial-gradient(180px 110px at 40% 10%, #24306a, #0d1330);
+  }
+
+  .prod h4 {
+    margin: 0.375rem 0 0.125rem;
+    font-size: 1rem;
+  }
+
+  .meta {
+    opacity: .85;
+    font-size: .9rem;
+  }
+
+  .price {
+    font-weight: 800;
+    color: var(--pri);
+  }
+
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.625rem;
+  }
+
+  .qty {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .chip {
+    font-size: .75rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #2a335a;
+    border-radius: 999px;
+    background: #0d1435;
+  }
+
+  .points-badge {
+    font-size: .75rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--pri-2);
+    border-radius: 999px;
+    background: linear-gradient(180deg, #7bf3c8, #57daa9);
+    color: #041423;
+    font-weight: 700;
+  }
+
+  .assistant {
+    position: sticky;
+    top: 72px;
+  }
+
+  .assistant .bot {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .avatar {
+    min-width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: radial-gradient(circle at 30% 30%, #7bf3c8, #6ee7ff);
+    color: #041423;
+    font-weight: 900;
+  }
+
+  .bubble {
+    flex: 1;
+    background: linear-gradient(180deg, #151c3c, #121832);
+    border: 1px solid #2a335a;
+    border-radius: 16px;
+    padding: 0.75rem;
+  }
+
+  .bubble small {
+    opacity: .8;
+  }
+
+  .chat {
+    display: flex;
+    gap: 0.625rem;
+    margin-top: 0.625rem;
+  }
+
+  .chat input {
+    flex: 1;
+  }
+
+  .cart {
+    position: fixed;
+    right: 1.125rem;
+    bottom: 1.125rem;
+    z-index: 5;
+  }
+
+  .cart .floating {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    background: linear-gradient(180deg, #7bf3c8, #57daa9);
+    color: #041423;
+    border-radius: 999px;
+    padding: 0.75rem 1rem;
+    font-weight: 800;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .cart .floating:hover {
+    transform: scale(1.05);
+  }
+
+  .badge {
+    background: #041423;
+    color: #7bf3c8;
+    border-radius: 999px;
+    padding: 0.125rem 0.5rem;
+  }
+
+  dialog {
+    border: 1px solid #2a335a;
+    background: linear-gradient(180deg, #111737, #0c1230);
+    border-radius: 20px;
+    color: var(--txt);
+    box-shadow: var(--shadow);
+    max-width: 560px;
+    width: 90%;
+  }
+
+  dialog::backdrop {
+    background: #000a;
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-head {
+    padding: 0.875rem 1.125rem;
+    border-bottom: 1px solid #27305a;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .modal-body {
+    padding: 1rem 1.125rem;
+  }
+
+  .ticket {
+    background: #0c1230;
+    border: 1px dashed #2a335a;
+    border-radius: 14px;
+    padding: 0.75rem;
+  }
+
+  .footer {
+    opacity: .7;
+    text-align: center;
+    padding: 0.875rem;
+    margin-top: 2rem;
+    font-size: 0.9rem;
+  }
+
+  /* Toast notifications */
+  .toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .toast {
+    background: linear-gradient(180deg, #151c3c, #121832);
+    border: 1px solid #2a335a;
+    border-left: 4px solid var(--pri);
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: var(--shadow);
+    animation: slideIn 0.3s ease, fadeOut 0.5s ease 2.5s forwards;
+  }
+
+  .toast.success {
+    border-left-color: var(--ok);
+  }
+
+  .toast.error {
+    border-left-color: var(--danger);
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeOut {
+    to {
+      opacity: 0;
+    }
+  }
+
+  /* Chat improvements */
+  .chat-history {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .chat-message {
+    display: flex;
+    gap: 8px;
+  }
+
+  .chat-message.user {
+    justify-content: flex-end;
+  }
+
+  .chat-message .message-content {
+    background: linear-gradient(180deg, #151c3c, #121832);
+    border: 1px solid #2a335a;
+    border-radius: 16px;
+    padding: 8px 12px;
+    max-width: 80%;
+  }
+
+  .chat-message.user .message-content {
+    background: linear-gradient(180deg, #1a3b5c, #152a45);
+  }
+
+  /* Favorite button */
+  .favorite-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #2a335a;
+    transition: color 0.2s;
+    z-index: 2;
+  }
+
+  .favorite-btn.active {
+    color: var(--danger);
+  }
+
+  .favorite-btn:hover {
+    color: var(--danger);
+  }
+
+  /* Loading animation */
+  .loader {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: var(--pri);
+    animation: spin 1s ease-in-out infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Print styles for ticket */
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+    #ticket-print, #ticket-print * {
+      visibility: visible;
+    }
+    #ticket-print {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      padding: 20px;
+      background: white;
+      color: black;
+      font-family: Arial, sans-serif;
+    }
+    #ticket-print .ticket-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+    #ticket-print h2 {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+    #ticket-print hr {
+      margin: 10px 0;
+      border: 0;
+      border-top: 1px dashed #ccc;
+    }
+  }
+
+  /* Student stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 15px;
+  }
+
+  .stat-card {
+    background: #0c1230;
+    border: 1px solid #2a335a;
+    border-radius: 12px;
+    padding: 10px;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--pri);
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    opacity: 0.8;
+  }
+
+  /* QR code */
+  .qr-container {
+    text-align: center;
+    margin-top: 15px;
+    padding: 10px;
+    background: #0c1230;
+    border-radius: 12px;
+    border: 1px solid #2a335a;
+  }
+
+  .qr-placeholder {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto;
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-weight: bold;
+    color: #333;
+  }
+
+  /* Password toggle */
+  .password-toggle {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .password-container {
+    position: relative;
+  }
+
+  .password-container input {
+    width: 100%;
+    padding-right: 40px;
+  }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap bar">
+      <div class="brand">
+        <div class="logo">AI</div>
+        <div>
+          <h1>Kiosco INCADÉ · Prototipo con IA</h1>
+          <div class="pill" id="student-status">No has iniciado sesión</div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="btn ghost" id="btn-login">Iniciar sesión</button>
+        <button class="btn secondary" id="btn-history" title="Ver tus compras">Historial</button>
+        <button class="btn" id="btn-favorites" title="Tus productos favoritos" style="display:none;">❤️ Favoritos</button>
+        <button class="btn" id="btn-stats" title="Tus estadísticas" style="display:none;">📊 Stats</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap grid">
+    <!-- Productos -->
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <strong>Catálogo para estudiantes</strong>
+          <div style="opacity:.8;font-size:.9rem">Esenciales del día a día · Precios en ARS</div>
+        </div>
+        <div class="controls">
+          <input id="search" type="text" placeholder="Buscar (agua, yerba, alfajor…)" />
+          <select id="filter">
+            <option value="">Todas las categorías</option>
+            <option>Bebidas</option>
+            <option>Snacks</option>
+            <option>Infusiones</option>
+            <option>Útiles</option>
+          </select>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="prod-list" class="products"></div>
+      </div>
+    </section>
+
+    <!-- Asistente virtual -->
+    <aside class="assistant">
+      <div class="card">
+        <div class="card-head"><strong>Asistente Aki 🤖</strong><span class="chip" id="mood">activo</span></div>
+        <div class="card-body">
+          <div class="chat-history" id="chat-history">
+            <div class="chat-message bot">
+              <div class="avatar">AI</div>
+              <div class="message-content" id="assistant-text">¡Hola! Soy <b>Aki</b>, tu asistente del kiosco. Inicia sesión con tu <b>matrícula</b> para recomendarte cosas ricas y útiles ✨</div>
+            </div>
+          </div>
+          <div class="chat">
+            <input id="chat-input" type="text" placeholder="Pregúntame: ¿Qué me recomendás para estudiar?"/>
+            <button class="btn" id="chat-send">Enviar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <div class="card-head"><strong>Recomendado para vos</strong><span class="chip" id="rec-reason">nuevo</span></div>
+        <div class="card-body">
+          <div id="recs" class="products"></div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Botón Carrito -->
+  <div class="cart">
+    <button id="open-cart" class="floating">🛒 Carrito <span class="badge" id="cart-count">0</span></button>
+  </div>
+
+  <!-- Modal Login/Registro -->
+  <dialog id="login-modal">
+    <div class="modal-head">
+      <strong>Ingreso con matrícula</strong>
+      <button class="btn ghost" id="close-login">Cerrar</button>
+    </div>
+    <div class="modal-body">
+      <p>Si es tu primera vez, te registramos en segundos.</p>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <input id="mat-input" type="text" placeholder="Matrícula (ej: 2025-001)" pattern="[0-9]{4}-[0-9]{3}" title="Formato: 2025-001" />
+        <input id="name-input" type="text" placeholder="Nombre (Valentín, Jose, Fran)" required />
+        <div class="password-container">
+          <input id="password-input" type="password" placeholder="Contraseña" required />
+          <button type="button" class="password-toggle" id="toggle-password">👁️</button>
+        </div>
+        <button class="btn" id="do-login">Entrar</button>
+      </div>
+      <small style="display: block; margin-top: 10px;">Ejemplos válidos: <b>2025-001</b>, <b>2024-123</b>. Tu sesión quedará recordada en este dispositivo.</small>
+    </div>
+  </dialog>
+
+  <!-- Modal Carrito / Checkout -->
+  <dialog id="cart-modal">
+    <div class="modal-head">
+      <strong>Tu carrito</strong>
+      <button class="btn ghost" id="close-cart">Cerrar</button>
+    </div>
+    <div class="modal-body">
+      <div id="cart-items"></div>
+      <hr style="border-color:#27305a;margin:14px 0"/>
+      <div class="row"><div>Total</div><div id="cart-total" class="price">$0</div></div>
+      
+      <div style="margin-top:12px">
+        <div style="margin:10px 0 6px">Medio de pago</div>
+        <div class="controls">
+          <label><input type="radio" name="pay" value="Efectivo" checked> Efectivo</label>
+          <label><input type="radio" name="pay" value="Tarjeta"> Tarjeta débito/crédito</label>
+          <label><input type="radio" name="pay" value="Mercado Pago"> Mercado Pago (QR)</label>
+        </div>
+      </div>
+      
+      <div id="qr-box" style="display:none;margin-top:12px" class="qr-container">
+        <div><b>Escaneá el QR con Mercado Pago</b></div>
+        <div class="qr-placeholder">
+          <img src="Captura.PNG" alt="QR de Mercado Pago" style="width:200px;height:200px;border-radius:8px;object-fit:cover;" onerror="this.style.display='none'; this.parentElement.textContent='QR de Mercado Pago';" />
+        </div>
+      </div>
+      
+      <div class="row" style="margin-top:14px">
+        <button class="btn danger" id="clear-cart">Vaciar</button>
+        <button class="btn" id="checkout">Finalizar compra</button>
+        <button class="btn secondary" id="print-ticket">🖨️ Imprimir</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Modal Historial -->
+  <dialog id="history-modal">
+    <div class="modal-head">
+      <strong>Historial de compras</strong>
+      <button class="btn ghost" id="close-history">Cerrar</button>
+    </div>
+    <div class="modal-body" id="history-content"></div>
+  </dialog>
+
+  <!-- Modal Favoritos -->
+  <dialog id="favorites-modal">
+    <div class="modal-head">
+      <strong>Tus productos favoritos</strong>
+      <button class="btn ghost" id="close-favorites">Cerrar</button>
+    </div>
+    <div class="modal-body">
+      <div id="favorites-list" class="products"></div>
+    </div>
+  </dialog>
+
+  <!-- Modal Estadísticas -->
+  <dialog id="stats-modal">
+    <div class="modal-head">
+      <strong>Tus estadísticas</strong>
+      <button class="btn ghost" id="close-stats">Cerrar</button>
+    </div>
+    <div class="modal-body">
+      <div id="stats-content">
+        <div class="stats-grid" id="stats-grid">
+          <!-- Las estadísticas se generarán dinámicamente -->
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Modal Ticket -->
+  <dialog id="ticket-modal">
+    <div class="modal-head">
+      <strong>Ticket de compra</strong>
+      <div>
+        <button class="btn secondary" id="print-ticket-btn">🖨️ Imprimir</button>
+        <button class="btn ghost" id="close-ticket">Cerrar</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="ticket" id="ticket"></div>
+    </div>
+  </dialog>
+
+  <!-- Ticket para impresión (oculto) -->
+  <div id="ticket-print" style="display:none;"></div>
+
+  <footer class="footer">Prototipo académico · INCADÉ · Hecho con HTML/CSS/JS — Asistente Aki (reglas simples + memoria local)</footer>
+
+  <!-- Contenedor para toasts -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

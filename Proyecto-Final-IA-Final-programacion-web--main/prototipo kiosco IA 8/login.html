@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Kiosco INCADÉ</title>
+    <style>
+        :root {
+            --bg: #0b1020;
+            --card: #121830;
+            --muted: #8aa0ff;
+            --pri: #6ee7ff;
+            --pri-2: #72f1b8;
+            --txt: #e6ebff;
+            --danger: #ff6b6b;
+            --shadow: 0 10px 30px rgba(0,0,0,.35);
+            --radius: 18px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: radial-gradient(1200px 800px at 10% -10%, #16213e22 0, #0000 60%),
+                        radial-gradient(800px 600px at 110% 10%, #1b2a6b22 0, #0000 60%),
+                        var(--bg);
+            color: var(--txt);
+            font-family: 'Inter', system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            background: linear-gradient(180deg, #121830, #0f1530);
+            border: 1px solid #27305a;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: conic-gradient(from 130deg, var(--pri), var(--pri-2));
+            box-shadow: var(--shadow);
+            font-weight: 800;
+            color: #0b1020;
+            font-size: 1.5rem;
+            margin: 0 auto 1.5rem;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            background: #0c1230;
+            border: 1px solid #2a335a;
+            border-radius: 12px;
+            color: var(--txt);
+            font-size: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--pri);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(180deg, var(--pri), #59d1ff);
+            border: 0;
+            border-radius: 12px;
+            color: #041423;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(89, 209, 255, 0.4);
+        }
+
+        .admin-login {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+
+        .admin-login a {
+            color: var(--pri);
+            text-decoration: none;
+        }
+
+        .error-message {
+            background: #ff6b6b22;
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">AI</div>
+        <h1>Kiosco INCADÉ</h1>
+        <div class="error-message" id="error-message"></div>
+        <form id="login-form">
+            <div class="input-group">
+                <label for="matricula">Matrícula</label>
+                <input type="text" id="matricula" name="matricula" placeholder="Ej: 2025-001" required pattern="[0-9]{4}-[0-9]{3}">
+            </div>
+            <div class="input-group">
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn">Ingresar</button>
+        </form>
+        <div class="admin-login">
+            ¿Eres administrador? <a href="#" id="toggle-admin">Ingresar como admin</a>
+        </div>
+    </div>
+
+    <script>
+        const loginForm = document.getElementById('login-form');
+        const errorMessage = document.getElementById('error-message');
+        const toggleAdmin = document.getElementById('toggle-admin');
+        let isAdminLogin = false;
+
+        toggleAdmin.addEventListener('click', (e) => {
+            e.preventDefault();
+            isAdminLogin = !isAdminLogin;
+            const matriculaInput = document.getElementById('matricula');
+            const matriculaLabel = matriculaInput.previousElementSibling;
+
+            if (isAdminLogin) {
+                matriculaLabel.textContent = 'Usuario Admin';
+                matriculaInput.placeholder = 'Usuario administrador';
+                matriculaInput.removeAttribute('pattern');
+                toggleAdmin.textContent = 'Ingresar como estudiante';
+            } else {
+                matriculaLabel.textContent = 'Matrícula';
+                matriculaInput.placeholder = 'Ej: 2025-001';
+                matriculaInput.pattern = '[0-9]{4}-[0-9]{3}';
+                toggleAdmin.textContent = 'Ingresar como admin';
+            }
+        });
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = {
+                matricula: document.getElementById('matricula').value,
+                password: document.getElementById('password').value,
+                isAdmin: isAdminLogin
+            };
+
+            try {
+                const response = await fetch('api.php?action=login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Guardar información del usuario
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    // Redirigir según el rol
+                    if (data.user.rol === 'admin') {
+                        window.location.href = 'admin.html';
+                    } else {
+                        window.location.href = 'index.html';
+                    }
+                } else {
+                    errorMessage.style.display = 'block';
+                    errorMessage.textContent = data.error || 'Error al iniciar sesión';
+                }
+            } catch (error) {
+                errorMessage.style.display = 'block';
+                errorMessage.textContent = 'Error de conexión';
+            }
+        });
+    </script>
+</body>
+</html>
